@@ -103,6 +103,11 @@ Upload the zip at the [Chrome Web Store Developer Dashboard](https://chrome.goog
 **The Web Store signs the extension for you** on publish — you do not generate a
 `.crx` or manage signing keys yourself.
 
+For the end-to-end store submission walkthrough (developer account, listing,
+screenshots, permission justifications, and review-friction notes) see
+[`PUBLISHING.md`](./PUBLISHING.md). The listing requires a public privacy policy
+URL — host the contents of [`PRIVACY.md`](./PRIVACY.md).
+
 ## Versioning a release
 
 `manifest.config.js` reads `version` from `package.json`, so the manifest version

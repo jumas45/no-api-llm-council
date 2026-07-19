@@ -238,6 +238,11 @@ Upload the zip at the [Chrome Web Store Developer Dashboard](https://chrome.goog
 every run. Bump `version` in `package.json` first (the manifest tracks it
 automatically); see the release checklist in [`docs/BUILD.md`](docs/BUILD.md).
 
+The full store submission walkthrough — developer account, listing, permission
+justifications, and review-friction notes — is in
+[`docs/PUBLISHING.md`](docs/PUBLISHING.md), and the privacy policy the listing
+requires is [`docs/PRIVACY.md`](docs/PRIVACY.md).
+
 ## Security
 
 - **Strict host-permission jail** — reach is limited to the three model domains;
