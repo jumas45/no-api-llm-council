@@ -106,6 +106,20 @@ Upload the zip at the [Chrome Web Store Developer Dashboard](https://chrome.goog
 **The Web Store signs the extension for you** on publish — you do not generate a
 `.crx` or manage signing keys yourself.
 
+### Store listing images
+
+The screenshots and promo tiles the listing requires are generated from the app
+captures in `assets/` and the extension icon:
+
+```bash
+npm run store-assets   # → "docs/Google Web Store/" (git-ignored)
+```
+
+`scripts/generate-store-assets.mjs` (uses `sharp`) writes the exact store sizes as
+24-bit PNGs with no alpha: five 1280×800 screenshots, a 440×280 small promo tile,
+and a 1400×560 marquee tile. Edit the captions/layout in that script and rerun.
+The output folder is git-ignored — these are upload artifacts, not source.
+
 For the end-to-end store submission walkthrough (developer account, listing,
 screenshots, permission justifications, and review-friction notes) see
 [`PUBLISHING.md`](./PUBLISHING.md). The listing requires a public privacy policy
