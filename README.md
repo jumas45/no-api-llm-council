@@ -1,4 +1,4 @@
-# LLM Council — Chrome Extension (Manifest V3)
+# No API LLM Council — Chrome Extension (Manifest V3)
 
 [![CI](https://github.com/jumas45/no-api-llm-council/actions/workflows/ci.yml/badge.svg)](https://github.com/jumas45/no-api-llm-council/actions/workflows/ci.yml)
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)
@@ -229,7 +229,7 @@ npm run icons        # writes public/icons/icon-{16,32,48,128}.png
 ## Publishing to the Chrome Web Store
 
 ```bash
-npm run package      # build, then zip dist/ → llm-council-v<version>.zip
+npm run package      # build, then zip dist/ → no-api-llm-council-v<version>.zip
 ```
 
 Upload the zip at the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).

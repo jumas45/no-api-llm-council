@@ -91,11 +91,11 @@ Edit `scripts/generate-icons.mjs` to change the design, then rerun and rebuild.
 ## Package for the Chrome Web Store
 
 ```bash
-npm run package    # build, then zip dist/ → llm-council-v<version>.zip
+npm run package    # build, then zip dist/ → no-api-llm-council-v<version>.zip
 ```
 
 `scripts/package.mjs` zips the **contents** of `dist/` (so `manifest.json` sits at
-the archive root, as the Web Store requires) into `llm-council-v<version>.zip`.
+the archive root, as the Web Store requires) into `no-api-llm-council-v<version>.zip`.
 It shells out to bsdtar (`System32\tar.exe`) on Windows and `zip` elsewhere — both
 emit spec-compliant forward-slash paths, and neither adds an npm dependency
 (ADR-0009). PowerShell's `Compress-Archive` is deliberately avoided: it writes
@@ -122,7 +122,7 @@ tracks the package version automatically.
 4. `npm run build`.
 5. Reload the extension in `chrome://extensions` and smoke-test a run.
 6. Update [`AI-BOM.md`](./AI-BOM.md) if any dependency or provider surface changed.
-7. `npm run package` and upload `llm-council-v<version>.zip` to the Web Store
+7. `npm run package` and upload `no-api-llm-council-v<version>.zip` to the Web Store
    (or download the `extension-zip` artifact from the CI run for that commit).
 
 ## Project layout

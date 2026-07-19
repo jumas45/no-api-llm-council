@@ -33,5 +33,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: extension-zip
-          path: llm-council-v*.zip
+          path: no-api-llm-council-v*.zip
           if-no-files-found: error

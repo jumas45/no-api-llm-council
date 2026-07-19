@@ -32,7 +32,7 @@ export function zipDir(sourceDir, outFile) {
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 if (isMain) {
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url)))
-  const out = `llm-council-v${pkg.version}.zip`
+  const out = `no-api-llm-council-v${pkg.version}.zip`
 
   if (!existsSync('dist')) {
     console.error('dist/ not found — run `npm run build` first.')

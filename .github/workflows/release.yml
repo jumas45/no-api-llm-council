@@ -22,9 +22,9 @@ jobs:
 
       - run: npm ci
       - run: npm run test:coverage
-      - run: npm run package # build → dist/, then zip → llm-council-v<version>.zip
+      - run: npm run package # build → dist/, then zip → no-api-llm-council-v<version>.zip
 
       - uses: softprops/action-gh-release@v2
         with:
-          files: llm-council-v*.zip
+          files: no-api-llm-council-v*.zip
           generate_release_notes: true

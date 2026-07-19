@@ -21,7 +21,7 @@ npm install
 npm run package
 ```
 
-This builds `dist/` and produces `llm-council-v<version>.zip` at the repo root,
+This builds `dist/` and produces `no-api-llm-council-v<version>.zip` at the repo root,
 with `manifest.json` at the archive root — the exact layout the Chrome Web Store
 expects. Upload **this zip** (not the `dist/` folder, not the source).
 

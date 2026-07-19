@@ -11,7 +11,7 @@ const HOST_PERMISSIONS = [
 
 export default defineManifest({
   manifest_version: 3,
-  name: 'LLM Council',
+  name: 'No API LLM Council',
   version: pkg.version,
   description:
     'Orchestrates a 3-stage council debate across ChatGPT, Claude, and Gemini by driving their web UIs. No API keys, no background network calls.',

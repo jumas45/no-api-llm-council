@@ -144,7 +144,7 @@ function Header({ running, state, tab, setTab, theme, onToggleTheme }) {
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span className="text-lg">🏛️</span>
-          <h1 className="text-sm font-bold tracking-wide">LLM Council</h1>
+          <h1 className="text-sm font-bold tracking-wide">No API LLM Council</h1>
         </div>
         <div className="flex items-center gap-2">
           {running ? (
