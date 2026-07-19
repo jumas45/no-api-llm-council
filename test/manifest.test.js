@@ -30,6 +30,12 @@ describe('manifest host-permission jail', () => {
     expect([...contentScriptMatches()].sort()).toEqual([...manifest.host_permissions].sort())
   })
 
+  it('keeps the description within the Chrome Web Store 132-char limit', () => {
+    // The Web Store rejects the upload if manifest.description exceeds 132
+    // characters. Gate it here so a longer blurb never reaches a failed upload.
+    expect(manifest.description.length).toBeLessThanOrEqual(132)
+  })
+
   it('keeps every council member covered by a host grant', () => {
     // A member without a matching host grant would silently fail tab injection
     // (see CLAUDE.md "Keep members in sync").

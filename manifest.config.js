@@ -14,7 +14,7 @@ export default defineManifest({
   name: 'No API LLM Council',
   version: pkg.version,
   description:
-    'Orchestrates a 3-stage council debate across ChatGPT, Claude, and Gemini by driving their web UIs. No API keys, no background network calls.',
+    'Runs a 3-stage council debate across ChatGPT, Claude, and Gemini by driving their web UIs. No API keys, no background calls.',
   permissions: ['tabs', 'storage', 'scripting', 'sidePanel', 'alarms'],
   host_permissions: HOST_PERMISSIONS,
   // Security Constraint 2 (PRD §2, ADR-0002/ADR-0008): the side panel renders
