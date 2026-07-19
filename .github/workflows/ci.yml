@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Reproducible, lockfile-exact install (ADR-0009).
+      - run: npm ci
+
+      # Fail the build on known-vulnerable runtime deps (ADR-0009).
+      - run: npm audit --omit=dev
+
+      # Coverage run so the per-file thresholds (ADR-0011) gate the build.
+      - run: npm run test:coverage
+
+      - run: npm run build
+
+      # Produce the Chrome Web Store zip and keep it as a build artifact so a
+      # release can be uploaded straight from CI.
+      - run: node scripts/package.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-zip
+          path: llm-council-v*.zip
+          if-no-files-found: error

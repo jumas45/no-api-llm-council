@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+*.zip
+*.log
+.DS_Store
+
+# Raw/working screenshots stay local. Committed README media lives in assets/.
+screenshots/

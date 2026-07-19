@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Semantic theme tokens. The dark palette is the default (also under an explicit
+   [data-theme='dark']); [data-theme='light'] swaps them. Tailwind's council-*
+   colors map to these vars (see tailwind.config.js), so components re-theme with
+   no per-class changes. See ADR-0005. */
+:root,
+:root[data-theme='dark'] {
+  --c-bg: #0b0f17;
+  --c-panel: #171f2d;
+  --c-panel2: #222c3d;
+  --c-border: #313d51;
+  --c-accent: #6ea8fe;
+  --c-text: #e6ebf2;
+  --c-muted: #9aa7b8;
+  --c-faint: #6b7789;
+  --c-strong: #ffffff;
+  --c-line: #34405a;
+  --c-code: #0a1020;
+  --c-scroll: #26303f;
+  /* Per-stage identity (bright on dark). */
+  --stage1: #38bdf8;
+  --stage1-tint: rgba(56, 189, 248, 0.08);
+  --stage1-border: rgba(56, 189, 248, 0.38);
+  --stage2: #fb7185;
+  --stage2-tint: rgba(251, 113, 133, 0.08);
+  --stage2-border: rgba(251, 113, 133, 0.38);
+  --stage3: #34d399;
+  --stage3-tint: rgba(52, 211, 153, 0.09);
+  --stage3-border: rgba(52, 211, 153, 0.42);
+}
+
+:root[data-theme='light'] {
+  --c-bg: #f4f6fa;
+  --c-panel: #ffffff;
+  --c-panel2: #eceff4;
+  --c-border: #d3dae5;
+  --c-accent: #2563eb;
+  --c-text: #1f2937;
+  --c-muted: #55627a;
+  --c-faint: #8592a6;
+  --c-strong: #0b1220;
+  --c-line: #cdd5e1;
+  --c-code: #f1f3f8;
+  --c-scroll: #c2cbd9;
+  /* Darker, saturated stage accents for contrast on light surfaces; tints a
+     touch stronger so the stage zones still read. */
+  --stage1: #0284c7;
+  --stage1-tint: rgba(2, 132, 199, 0.09);
+  --stage1-border: rgba(2, 132, 199, 0.32);
+  --stage2: #e11d48;
+  --stage2-tint: rgba(225, 29, 72, 0.08);
+  --stage2-border: rgba(225, 29, 72, 0.3);
+  --stage3: #059669;
+  --stage3-tint: rgba(5, 150, 105, 0.09);
+  --stage3-border: rgba(5, 150, 105, 0.32);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+/* Slim scrollbars for the narrow side panel. */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--c-scroll);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}

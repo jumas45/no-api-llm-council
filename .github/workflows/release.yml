@@ -1,0 +1,30 @@
+name: Release
+
+# Cut a release by pushing a version tag, e.g.:
+#   git tag v1.0.1 && git push origin v1.0.1
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # required to create the GitHub Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run test:coverage
+      - run: npm run package # build → dist/, then zip → llm-council-v<version>.zip
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: llm-council-v*.zip
+          generate_release_notes: true
