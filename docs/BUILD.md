@@ -96,8 +96,11 @@ npm run package    # build, then zip dist/ → llm-council-v<version>.zip
 
 `scripts/package.mjs` zips the **contents** of `dist/` (so `manifest.json` sits at
 the archive root, as the Web Store requires) into `llm-council-v<version>.zip`.
-It shells out to `Compress-Archive` on Windows and `zip` elsewhere — no extra npm
-dependency (ADR-0009). CI also produces this zip as a build artifact on every run.
+It shells out to bsdtar (`System32\tar.exe`) on Windows and `zip` elsewhere — both
+emit spec-compliant forward-slash paths, and neither adds an npm dependency
+(ADR-0009). PowerShell's `Compress-Archive` is deliberately avoided: it writes
+back-slash separators that Chrome can fail to resolve. CI also produces this zip
+as a build artifact on every run.
 
 Upload the zip at the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
 **The Web Store signs the extension for you** on publish — you do not generate a
