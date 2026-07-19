@@ -36,6 +36,17 @@ describe('manifest host-permission jail', () => {
     expect(manifest.description.length).toBeLessThanOrEqual(132)
   })
 
+  it('requests only the API permissions the extension actually uses', () => {
+    // Every declared permission must map to a real chrome.* call the code makes
+    // (see the Web Store permission justifications). `scripting` is deliberately
+    // absent: the content script injects via the static `content_scripts` entry,
+    // which needs only host permissions — not the `scripting` permission. An
+    // unused permission is a likely Web Store rejection.
+    expect([...manifest.permissions].sort()).toEqual(
+      ['alarms', 'sidePanel', 'storage', 'tabs'].sort(),
+    )
+  })
+
   it('keeps every council member covered by a host grant', () => {
     // A member without a matching host grant would silently fail tab injection
     // (see CLAUDE.md "Keep members in sync").

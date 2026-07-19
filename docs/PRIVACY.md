@@ -54,7 +54,7 @@ have Chrome Sync enabled). It is never transmitted to the developer.
 | Permission | Why it is needed |
 | --- | --- |
 | `tabs` | Locate and coordinate the provider tabs used in a run. |
-| `scripting` / content scripts | Inject the prompt into, and read the answer from, the provider pages. |
+| Content scripts (host access) | Inject the prompt into, and read the answer from, the provider pages. |
 | `storage` | Save your settings and custom prompt templates locally. |
 | `sidePanel` | Render the council UI in Chrome's side panel. |
 | `alarms` | Drive orchestration timers (e.g. per-tab timeouts). |
