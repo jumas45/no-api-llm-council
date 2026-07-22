@@ -81,6 +81,7 @@ export default function RunView({ run, live = false, collapsedDefault = false })
         subject={subject}
         syncOpen={sync}
         durationMs={run.timings?.stage1}
+        expandAll={allOpen}
       />
 
       <StageSection
@@ -94,6 +95,7 @@ export default function RunView({ run, live = false, collapsedDefault = false })
         syncOpen={sync}
         durationMs={run.timings?.stage2}
         ranking={run.ranking}
+        expandAll={allOpen}
       />
     </div>
   )
@@ -177,6 +179,7 @@ function StageSection({
   syncOpen,
   durationMs,
   ranking,
+  expandAll,
 }) {
   const theme = STAGE_THEME[stageNum]
   const running = stageIsRunning(bucket, members)
@@ -223,6 +226,7 @@ function StageSection({
               subject={subject}
               accent={theme.accent}
               syncOpen={syncOpen}
+              expandAll={expandAll}
             />
           ))}
         </div>

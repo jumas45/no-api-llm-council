@@ -6,7 +6,7 @@ import Collapsible from './Collapsible.jsx'
 import Markdown from './Markdown.jsx'
 import DurationChip from './DurationChip.jsx'
 
-export default function ResponseCard({ memberId, result, subject, accent, syncOpen }) {
+export default function ResponseCard({ memberId, result, subject, accent, syncOpen, expandAll }) {
   const member = COUNCIL_MEMBERS[memberId]
   const { status, text, error, ms } = result || {}
   const running = status === STATUS.RUNNING
@@ -44,7 +44,13 @@ export default function ResponseCard({ memberId, result, subject, accent, syncOp
               {error}
             </p>
           ) : text ? (
-            <div className="max-h-[28rem] overflow-y-auto pr-1 text-council-strong">
+            <div
+              className={
+                expandAll
+                  ? 'text-council-strong'
+                  : 'max-h-[28rem] overflow-y-auto pr-1 text-council-strong'
+              }
+            >
               <Markdown>{text}</Markdown>
             </div>
           ) : (
