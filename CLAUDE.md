@@ -65,6 +65,11 @@ Treat docs as part of "done," not an afterthought:
    - To reverse a past decision, write a new ADR that **supersedes** the old one
      and mark the old one `Superseded by ADR-NNNN` — don't rewrite its decision.
    - Skip ADRs for trivial, easily-reversed changes.
+3. **`CHANGELOG.md`** records user-visible changes. **Every change a user would
+   notice** (new/changed behavior, UI, permissions, fixes) gets a one-line
+   entry under `## [Unreleased]`, in [Keep a Changelog](https://keepachangelog.com)
+   format. On release, rename `[Unreleased]` to the new version. Skip
+   internal-only refactors — those live in git history, not here.
 
 ## Test-Driven Development (TDD) — Mandatory Workflow
 
