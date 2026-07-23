@@ -1,7 +1,7 @@
 {
   "name": "no-api-llm-council",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Chrome Extension (MV3) that ports Karpathy's LLM Council: orchestrates ChatGPT, Claude, and Gemini by driving their web UIs.",
   "scripts": {

@@ -20,6 +20,7 @@
 import TurndownService from 'turndown'
 import { gfm } from 'turndown-plugin-gfm'
 import { MSG } from '../shared/constants.js'
+import { normalizeCodeFences } from '../shared/markdown.js'
 import { selectorsForHost } from './selectors.js'
 
 // Converts a response's rendered DOM back into clean Markdown, so code blocks,
@@ -316,7 +317,9 @@ function scrapeMarkdown() {
       if ((n.textContent || '').trim()) unwrap(n)
       else n.remove()
     })
-    const md = turndown.turndown(clone).trim()
+    // Repair over-indented code fences (e.g. a model that centered its ASCII
+    // art) so the stored/exported Markdown parses cleanly, not just the render.
+    const md = normalizeCodeFences(turndown.turndown(clone).trim())
     return md || el.innerText.trim()
   } catch {
     return el.innerText.trim()

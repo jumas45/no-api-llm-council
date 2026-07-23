@@ -95,6 +95,61 @@ describe('startRun — happy path', () => {
   })
 })
 
+describe('startRun — fresh tab per stage (anti self-preference bias)', () => {
+  it('reopens a new tab for Stage 2 & 3 and closes the prior stage tabs', async () => {
+    // Reusing a member's tab would leave its own Stage-1 answer scrolled up in
+    // the same conversation, letting the model recognize and up-rank itself in
+    // the anonymized peer review. Each stage must run in a brand-new tab.
+    const { submits, removedTabs } = installChromeHarness({ members: MEMBERS })
+
+    await drainUntilSettled(startRun(baseConfig()))
+
+    expect((await getState()).status).toBe(STATUS.DONE)
+
+    // Group the tab ids each member submitted into, in stage order.
+    const byMember = {}
+    for (const { member, tabId } of submits) (byMember[member] ??= []).push(tabId)
+
+    // A non-chairman answered Stages 1 & 2 — each in a different tab.
+    expect(byMember.chatgpt).toHaveLength(2)
+    expect(new Set(byMember.chatgpt).size).toBe(2)
+
+    // The chairman (gemini) additionally synthesizes in Stage 3 — three tabs,
+    // all distinct.
+    expect(byMember.gemini).toHaveLength(3)
+    expect(new Set(byMember.gemini).size).toBe(3)
+
+    // Every Stage-1 tab was closed once its stage was over.
+    for (const ids of Object.values(byMember)) {
+      expect(removedTabs).toContain(ids[0])
+    }
+  })
+})
+
+describe('startRun — waits for composer hydration before submitting', () => {
+  it('waits for every opened tab to load, including the dedicated first tab', async () => {
+    // Typing into a provider SPA before its composer mounts silently drops the
+    // text, so waitForComposer (waitForTabComplete + hydration sleep) must run
+    // for EVERY opened tab before we submit to it. Dedicated mode exercises the
+    // first-member tab opened via windows.create — the path that once skipped
+    // the wait. `waitedTabs` records the tabs waitForTabComplete waited on.
+    const { submits, waitedTabs } = installChromeHarness({ members: MEMBERS })
+
+    await drainUntilSettled(startRun(baseConfig({ dedicatedWindow: true })))
+
+    expect((await getState()).status).toBe(STATUS.DONE)
+
+    const submittedTabs = [...new Set(submits.map((s) => s.tabId))]
+    expect(submittedTabs.length).toBeGreaterThan(0)
+    for (const tabId of submittedTabs) {
+      expect(
+        waitedTabs.has(tabId),
+        `tab ${tabId} was submitted to without a load/hydration wait`,
+      ).toBe(true)
+    }
+  })
+})
+
 describe('startRun — no Stage 1 answers', () => {
   it('errors out and never reaches Stage 3', async () => {
     // Every member's Stage-1 await fails.
@@ -169,8 +224,29 @@ describe('startRun — auto-close', () => {
     )
     expect(store[PENDING_CLOSE_KEY]).toBeTruthy()
 
+    // The run also closes tabs between stages (fresh-tab reopen); ignore those
+    // and assert only that auto-close removes the one remaining chairman tab.
+    chrome.tabs.remove.mockClear()
     await performAutoClose()
     expect(chrome.tabs.remove).toHaveBeenCalledOnce()
+  })
+
+  it('queues only the Stage-3 chairman tab for close (earlier tabs already gone)', async () => {
+    // The between-stage reopens close Stage 1 & 2 tabs during the run, so by the
+    // time it finishes only the chairman's fresh Stage-3 tab is open. The post-run
+    // auto-close payload must therefore contain exactly that one tab — not the
+    // stale, already-closed earlier tab ids.
+    const { store, submits } = installChromeHarness({ members: MEMBERS })
+
+    await drainUntilSettled(
+      startRun(baseConfig({ autoClose: true, autoCloseDelayMs: 1000 })),
+    )
+    expect((await getState()).status).toBe(STATUS.DONE)
+
+    // gemini is the chairman; its 3rd (Stage-3) submit lands in the final tab.
+    const geminiTabs = submits.filter((s) => s.member === 'gemini').map((s) => s.tabId)
+    expect(geminiTabs).toHaveLength(3)
+    expect(store[PENDING_CLOSE_KEY].tabIds).toEqual([geminiTabs[2]])
   })
 
   it('removes the dedicated window (not tabs) when the run used one', async () => {
@@ -183,6 +259,11 @@ describe('startRun — auto-close', () => {
     )
 
     expect(store[PENDING_CLOSE_KEY].dedicated).toBe(true)
+    // Isolate performAutoClose: ignore the in-run between-stage tab closes and
+    // any leftover-window cleanup a prior dedicated run may have triggered, then
+    // assert auto-close removes the whole dedicated window (not tabs).
+    chrome.tabs.remove.mockClear()
+    chrome.windows.remove.mockClear()
     await performAutoClose()
     expect(chrome.windows.remove).toHaveBeenCalledOnce()
     expect(chrome.tabs.remove).not.toHaveBeenCalled()
@@ -243,8 +324,10 @@ describe('startRun — dedicated window', () => {
     await drainUntilSettled(startRun(baseConfig({ dedicatedWindow: true })))
 
     expect((await getState()).status).toBe(STATUS.DONE)
+    // The council window is seeded exactly once; the other members and every
+    // between-stage reopen add their tabs into that same window (no new window
+    // per reopen), so windows.create stays at one.
     expect(first.chrome.windows.create).toHaveBeenCalledOnce()
-    expect(first.chrome.tabs.create).toHaveBeenCalledTimes(MEMBERS.length - 1)
 
     // A second dedicated run must close the previous council window first.
     const second = installChromeHarness({ members: MEMBERS })
