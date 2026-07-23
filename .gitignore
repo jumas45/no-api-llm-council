@@ -4,6 +4,7 @@ coverage
 *.zip
 *.log
 .DS_Store
+desktop.ini
 
 # Raw/working screenshots stay local. Committed README media lives in assets/.
 screenshots/
