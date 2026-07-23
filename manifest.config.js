@@ -15,7 +15,7 @@ export default defineManifest({
   version: pkg.version,
   description:
     'Runs a 3-stage council debate across ChatGPT, Claude, and Gemini by driving their web UIs. No API keys, no background calls.',
-  permissions: ['tabs', 'storage', 'sidePanel', 'alarms'],
+  permissions: ['storage', 'sidePanel', 'alarms'],
   host_permissions: HOST_PERMISSIONS,
   // Security Constraint 2 (PRD §2, ADR-0002/ADR-0008): the side panel renders
   // untrusted, model-scraped Markdown, so lock down what its page may load.

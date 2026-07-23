@@ -38,12 +38,19 @@ describe('manifest host-permission jail', () => {
 
   it('requests only the API permissions the extension actually uses', () => {
     // Every declared permission must map to a real chrome.* call the code makes
-    // (see the Web Store permission justifications). `scripting` is deliberately
-    // absent: the content script injects via the static `content_scripts` entry,
-    // which needs only host permissions — not the `scripting` permission. An
-    // unused permission is a likely Web Store rejection.
+    // (see the Web Store permission justifications). Two permissions are
+    // deliberately absent:
+    //   • `scripting` — the content script injects via the static
+    //     `content_scripts` entry, which needs only host permissions.
+    //   • `tabs` — the code calls tabs.{create,update,remove,get,sendMessage}
+    //     and tabs.onUpdated, none of which require the `tabs` permission, and
+    //     only reads the non-sensitive `status`/`windowId` Tab fields. The
+    //     sensitive fields the permission gates (url/title/favIconUrl) are
+    //     never read. The Web Store rejected the upload for requesting it
+    //     (violation "Purple Potassium").
+    // An unused permission is a Web Store rejection.
     expect([...manifest.permissions].sort()).toEqual(
-      ['alarms', 'sidePanel', 'storage', 'tabs'].sort(),
+      ['alarms', 'sidePanel', 'storage'].sort(),
     )
   })
 

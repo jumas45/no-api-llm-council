@@ -9,10 +9,59 @@ Chrome Web Store. For local dev/build details see [`BUILD.md`](./BUILD.md).
       `manifest.config.js`). Follow semver; the store rejects re-uploads that
       don't increase the version.
 - [ ] `npm test` is green.
-- [ ] You've smoke-tested the built `dist/` via **Load unpacked** in
-      `chrome://extensions`.
+- [ ] You've run the [manual QA smoke test](#05-manual-qa-smoke-test) against the
+      built `dist/`. The unit tests **cannot** catch a permission-gating
+      regression — `chrome.*` is mocked in tests — so a real Load-unpacked run is
+      the only thing that proves the extension still works with the current
+      permission set.
 - [ ] A public **privacy policy URL** is live (see step 3) — the store will not
       let you submit without one, because we request host permissions.
+
+## 0.5. Manual QA smoke test
+
+Do this every release, and especially after **any manifest `permissions` /
+`host_permissions` change** — the automated suite mocks `chrome.*`, so it cannot
+detect a permission that Chrome enforces at runtime but the code still relies on.
+About 3 minutes; exercises every `chrome.tabs` / `chrome.windows` path a run
+uses.
+
+**Load the build**
+
+- [ ] `chrome://extensions` → enable **Developer mode**.
+- [ ] Remove any previously loaded copy first, so you're testing a clean install
+      of the current permission set (not a stale grant).
+- [ ] **Load unpacked** → select the freshly built `dist/`.
+
+**Verify permissions (the store-relevant check)**
+
+- [ ] Card shows **no red "Errors"** button (a malformed manifest flags here).
+- [ ] **Details** → **Permissions** lists **only** what the manifest declares.
+      In particular, confirm there is **no tab-access / "read your browsing
+      history" warning** unless `tabs` is deliberately declared.
+
+**Exercise every tab code path — one council run**
+
+Be logged into ChatGPT, Claude, and Gemini in this profile, then open the side
+panel, run a short prompt (e.g. *"Name one benefit of unit tests"*), and confirm:
+
+- [ ] Three tabs open and briefly focus — proves `tabs.create` /
+      `windows.create` + `tabs.update({active})`.
+- [ ] Each provider receives the typed prompt — proves the `tabs.onUpdated`
+      load-wait + `tabs.sendMessage`.
+- [ ] Answers stream back into the panel — proves `tabs.get`
+      (`.status`/`.windowId`) + scraping.
+- [ ] Tabs auto-close after the run (if the "close when finished" toggle is on)
+      — proves `tabs.remove`.
+
+**Check for silent runtime errors**
+
+- [ ] Extension card → **service worker** → **Inspect** → **Console** shows no
+      `permission`-related or `Cannot read properties of undefined` errors from
+      the run.
+
+> This is manual by necessity: loading an unpacked extension needs a native file
+> picker, and `chrome://` pages plus the side panel aren't reachable by page
+> automation — so it can't be scripted.
 
 ## 1. Build the upload package
 
