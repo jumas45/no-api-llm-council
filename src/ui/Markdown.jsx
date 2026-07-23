@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { normalizeCodeFences } from '../shared/markdown.js'
 
 // Model output is untrusted: only allow http(s)/mailto absolute links and
 // relative/anchor links. Anything with another scheme (javascript:, data:, …)
@@ -93,7 +94,7 @@ export default function Markdown({ children, className = '' }) {
           },
         }}
       >
-        {children || ''}
+        {normalizeCodeFences(children) || ''}
       </ReactMarkdown>
     </div>
   )
