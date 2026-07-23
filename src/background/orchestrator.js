@@ -288,19 +288,66 @@ async function openMemberTabs() {
       windowId = win.id
       councilWindowId = win.id
       tab = win.tabs?.[0]
+      await waitForComposer(tab.id)
     } else {
-      tab = await chrome.tabs.create({
-        url: member.url,
-        active: false,
-        pinned: !dedicated, // pin only when sharing the user's window
-        ...(windowId ? { windowId } : {}),
-      })
+      tab = await openMemberTab(id, { windowId, dedicated })
     }
 
     state.tabs[id] = tab.id
-    await waitForTabComplete(tab.id).catch(() => {})
-    await sleep(1500) // let the SPA hydrate its composer (outside the timeout)
   }
+  await persistAndBroadcast()
+}
+
+// Wait for a freshly-opened provider tab to finish loading and give its SPA a
+// moment to hydrate its composer (the sleep sits outside the per-tab timeout).
+async function waitForComposer(tabId) {
+  await waitForTabComplete(tabId).catch(() => {})
+  await sleep(1500)
+}
+
+// Open one fresh background tab for a member and wait for it to be usable.
+// Shared by the initial open and the between-stage reopen.
+async function openMemberTab(id, { windowId, dedicated }) {
+  const tab = await chrome.tabs.create({
+    url: COUNCIL_MEMBERS[id].url,
+    active: false,
+    pinned: !dedicated, // pin only when sharing the user's window
+    ...(windowId ? { windowId } : {}),
+  })
+  await waitForComposer(tab.id)
+  return tab
+}
+
+// Close each member's current tab and open a fresh one, so the next stage runs
+// in a brand-new conversation with no memory of the prior stage. This defeats
+// self-preference bias in the anonymized peer review (a model recognizing its
+// own Stage-1 answer still sitting in the same chat thread and up-ranking it),
+// and hands the Stage-3 chairman a clean context. Fresh tabs are opened BEFORE
+// the old ones close so a dedicated council window is never momentarily left
+// empty (which would close the window). See ADR-0012.
+async function reopenTabsFor(memberIds) {
+  if (!state || cancelled) return
+  const dedicated = state.dedicatedWindow
+  const windowId = dedicated ? councilWindowId : undefined
+  const oldTabIds = Object.values(state.tabs).filter(Boolean)
+
+  const fresh = {}
+  for (const id of memberIds) {
+    if (!state || cancelled) return
+    const tab = await openMemberTab(id, { windowId, dedicated })
+    fresh[id] = tab.id
+  }
+
+  if (oldTabIds.length) {
+    try {
+      await chrome.tabs.remove(oldTabIds)
+    } catch {
+      /* already closed */
+    }
+  }
+
+  if (!state) return
+  state.tabs = fresh
   await persistAndBroadcast()
 }
 
@@ -408,6 +455,11 @@ export async function startRun(config) {
       throw new Error('No council member returned a Stage 1 response.')
     }
 
+    // Fresh tabs before peer review so no model can see (and favor) its own
+    // Stage-1 answer in its own conversation thread (ADR-0012).
+    await reopenTabsFor(answered)
+    if (cancelled) return abort()
+
     // --- Stage 2: Anonymized Peer Review ---
     state.stage = 2
     await persistAndBroadcast()
@@ -437,6 +489,12 @@ export async function startRun(config) {
 
     let chairman = state.chairman
     if (!answered.includes(chairman)) chairman = answered[0]
+
+    // Close every council tab and give the chairman a single fresh one, so the
+    // synthesis is judged purely on the anonymized materials in the prompt, not
+    // on the chairman's own earlier turns (ADR-0012).
+    await reopenTabsFor([chairman])
+    if (cancelled) return abort()
 
     const reviewsLabeled = labeledResponses('stage2', reviewers)
     const synthPrompt = buildSynthesisPrompt(

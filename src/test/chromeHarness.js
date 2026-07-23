@@ -4,14 +4,16 @@
 // execute against fully controllable inputs.
 //
 // Design notes:
-//   • Tabs are assigned to council members in creation order (which matches the
-//     order the orchestrator opens them), so a test's `respond` callback can
-//     answer "as" a given member.
+//   • Tabs are assigned to council members by the fresh-chat URL the orchestrator
+//     opens (COUNCIL_MEMBERS[id].url), so a member keeps its identity even when
+//     its tab is closed and reopened between stages.
+//   • Stage detection uses a per-MEMBER await counter (1=stage1, 2=stage2,
+//     3=stage3), not per-tab — a member's stage survives a fresh tab.
 //   • `chrome.tabs.get` supports BOTH the callback form (waitForTabComplete) and
 //     the promise form (focusTab) the orchestrator uses.
 //   • All tabs report status:'complete' immediately, so no load timers are armed.
 import { vi } from 'vitest'
-import { MSG } from '../shared/constants.js'
+import { MSG, COUNCIL_MEMBERS } from '../shared/constants.js'
 
 // Default "happy path" content-script behavior: every submit succeeds, every
 // await returns text. The 2nd await for a member is its Stage-2 review, so it
@@ -33,16 +35,23 @@ export function installChromeHarness({ members, respond = defaultRespond } = {})
   const store = {}
   let nextTabId = 100
   let nextWinId = 900
-  let createIdx = 0
   const tabToWindow = new Map()
   const tabToMember = new Map()
-  const awaitCounts = new Map()
+  const awaitCounts = new Map() // keyed by MEMBER, so it survives a fresh tab
   const removedTabs = []
+  const submits = [] // { member, tabId } per TYPE_AND_SUBMIT, in order
+  // Tabs the orchestrator waited on via waitForTabComplete — the ONLY caller of
+  // the callback form of chrome.tabs.get (focusTab/nudger use the promise form),
+  // so this set records exactly the tabs whose load/hydration we waited for.
+  const waitedTabs = new Set()
 
-  const makeTab = (windowId) => {
+  const urlToMember = {}
+  for (const id of Object.keys(COUNCIL_MEMBERS)) urlToMember[COUNCIL_MEMBERS[id].url] = id
+
+  const makeTab = (windowId, url) => {
     const id = nextTabId++
     tabToWindow.set(id, windowId ?? null)
-    tabToMember.set(id, members[createIdx++])
+    tabToMember.set(id, urlToMember[url])
     return { id, windowId: windowId ?? null, status: 'complete' }
   }
 
@@ -50,9 +59,10 @@ export function installChromeHarness({ members, respond = defaultRespond } = {})
     const member = tabToMember.get(tabId)
     let awaitIndex = 0
     if (message?.type === MSG.AWAIT_RESPONSE) {
-      awaitIndex = (awaitCounts.get(tabId) || 0) + 1
-      awaitCounts.set(tabId, awaitIndex)
+      awaitIndex = (awaitCounts.get(member) || 0) + 1
+      awaitCounts.set(member, awaitIndex)
     }
+    if (message?.type === MSG.TYPE_AND_SUBMIT) submits.push({ member, tabId })
     return respond({ member, type: message?.type, awaitIndex, message })
   }
 
@@ -76,7 +86,7 @@ export function installChromeHarness({ members, respond = defaultRespond } = {})
       },
     },
     tabs: {
-      create: vi.fn(async ({ windowId } = {}) => makeTab(windowId)),
+      create: vi.fn(async ({ windowId, url } = {}) => makeTab(windowId, url)),
       get: vi.fn((tabId, cb) => {
         const tab = {
           id: tabId,
@@ -84,6 +94,7 @@ export function installChromeHarness({ members, respond = defaultRespond } = {})
           status: 'complete',
         }
         if (typeof cb === 'function') {
+          waitedTabs.add(tabId) // callback form == waitForTabComplete
           cb(tab)
           return undefined
         }
@@ -97,9 +108,9 @@ export function installChromeHarness({ members, respond = defaultRespond } = {})
       onUpdated: { addListener: vi.fn(), removeListener: vi.fn() },
     },
     windows: {
-      create: vi.fn(async ({ windowId } = {}) => {
+      create: vi.fn(async ({ url } = {}) => {
         const id = nextWinId++
-        const tab = makeTab(id)
+        const tab = makeTab(id, url)
         return { id, tabs: [tab] }
       }),
       update: vi.fn(() => Promise.resolve()),
@@ -113,7 +124,7 @@ export function installChromeHarness({ members, respond = defaultRespond } = {})
   }
 
   globalThis.chrome = chrome
-  return { chrome, store, removedTabs }
+  return { chrome, store, removedTabs, submits, waitedTabs }
 }
 
 // Drive a fired-off orchestrator promise to completion under fake timers.

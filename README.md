@@ -142,6 +142,13 @@ inserted text. So the orchestrator briefly activates each tab just long enough t
 type + submit the prompt, then lets the model generate in the background while it
 moves on. You'll see each tab flash to the front once per stage; that's expected.
 
+Each stage also runs in a **fresh tab** (a new conversation): the council reopens
+tabs before the peer review and again before the synthesis. This is deliberate —
+if a model reviewed in the same chat that still held its own first answer, it
+could recognize and over-rate itself, defeating the anonymized review. So you'll
+also see tabs close and reopen between stages. See
+[ADR-0012](./docs/adr/0012-fresh-tab-per-stage.md).
+
 ## Customize the prompts
 
 The council isn't a black box — **every stage runs on a prompt template you can

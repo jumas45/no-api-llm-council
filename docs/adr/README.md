@@ -43,3 +43,4 @@ Skip an ADR for trivial or easily-reversed changes.
 | [0009](./0009-supply-chain-policy.md) | Supply-chain policy — lockfile installs, audit, AI-BOM | Accepted |
 | [0010](./0010-testing-strategy-vitest.md) | Testing strategy — Vitest + jsdom, with a fake `chrome` harness | Accepted |
 | [0011](./0011-pragmatic-orchestrator-coverage.md) | Pragmatic orchestrator coverage — cover behavior, not defensive plumbing | Accepted |
+| [0012](./0012-fresh-tab-per-stage.md) | Fresh tab per stage to defeat self-preference bias | Accepted |
